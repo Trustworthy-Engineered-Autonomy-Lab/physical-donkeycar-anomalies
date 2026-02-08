@@ -3,10 +3,11 @@
 Scripts to drive a donkey 2 car
 
 Usage:
-    manage.py (drive) [--model=<model>] [--js] [--type=(linear|categorical)] [--camera=(single|stereo)] [--meta=<key:value> ...] [--myconfig=<filename>]
+    manage.py (drive) [--model=<model>] [--js] [--type=(linear|categorical)] [--camera=(single|stereo)] [--meta=<key:value> ...] [--myconfig=<filename>] [--random_start]
     manage.py (train) [--tubs=tubs] (--model=<model>) [--type=(linear|inferred|tensorrt_linear|tflite_linear)]
 
 Options:
+    --random_start          Start at from a random position on the track.
     -h --help               Show this screen.
     --js                    Use physical joystick.
     -f --file=<file>        A text file containing paths to tub files, one per line. Option may be used more than once.
@@ -15,6 +16,9 @@ Options:
                             [default: myconfig.py]
 """
 from docopt import docopt
+import os
+import time
+import logging
 
 #
 # import cv2 early to avoid issue with importing after tensorflow
@@ -26,22 +30,22 @@ except:
     pass
 
 
-import donkeycar as dk
-from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
-from donkeycar.parts.tub_v2 import TubWriter
-from donkeycar.parts.datastore import TubHandler
-from donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
-from donkeycar.parts.throttle_filter import ThrottleFilter
-from donkeycar.parts.behavior import BehaviorPart
-from donkeycar.parts.file_watcher import FileWatcher
-from donkeycar.parts.launch import AiLaunch
-from donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
-from donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
-from donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
-from donkeycar.parts.explode import ExplodeDict
-from donkeycar.parts.transform import Lambda
-from donkeycar.parts.pipe import Pipe
-from donkeycar.utils import *
+import donkeycar.donkeycar as dk
+from donkeycar.donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
+from donkeycar.donkeycar.parts.tub_v2 import TubWriter
+from donkeycar.donkeycar.parts.datastore import TubHandler
+from donkeycar.donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
+from donkeycar.donkeycar.parts.throttle_filter import ThrottleFilter
+from donkeycar.donkeycar.parts.behavior import BehaviorPart
+from donkeycar.donkeycar.parts.file_watcher import FileWatcher
+from donkeycar.donkeycar.parts.launch import AiLaunch
+from donkeycar.donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
+from donkeycar.donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
+from donkeycar.donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
+from donkeycar.donkeycar.parts.explode import ExplodeDict
+from donkeycar.donkeycar.parts.transform import Lambda
+from donkeycar.donkeycar.parts.pipe import Pipe
+from donkeycar.donkeycar.utils import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -133,7 +137,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
 
     # add lidar
     if cfg.USE_LIDAR:
-        from donkeycar.parts.lidar import RPLidar
+        from donkeycar.donkeycar.parts.lidar import RPLidar
         if cfg.LIDAR_TYPE == 'RP':
             print("adding RP lidar part")
             lidar = RPLidar(lower_limit = cfg.LIDAR_LOWER_LIMIT, upper_limit = cfg.LIDAR_UPPER_LIMIT)
@@ -147,7 +151,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     #     V.add(lidar, inputs=[], outputs=['lidar/dist'], threaded=True)
 
     if cfg.SHOW_FPS:
-        from donkeycar.parts.fps import FrequencyLogger
+        from donkeycar.donkeycar.parts.fps import FrequencyLogger
         V.add(FrequencyLogger(cfg.FPS_DEBUG_INTERVAL),
               outputs=["fps/current", "fps/fps_list"])
 
@@ -477,7 +481,10 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # Decide what inputs should change the car's steering and throttle
     # based on the choice of user or autopilot drive mode
     #
-    V.add(DriveMode(cfg.AI_THROTTLE_MULT),
+    steering_offset = getattr(cfg, 'STEERING_OFFSET', 0.0)
+    if abs(steering_offset) > 1e-6:
+        logger.info(f"Applying steering offset of {steering_offset} (inside DriveMode)")
+    V.add(DriveMode(cfg.AI_THROTTLE_MULT, steering_offset),
           inputs=['user/mode', 'user/angle', 'user/throttle',
                   'pilot/angle', 'pilot/throttle'],
           outputs=['steering', 'throttle'])
@@ -661,11 +668,13 @@ class ToggleRecording:
 
 
 class DriveMode:
-    def __init__(self, ai_throttle_mult=1.0):
+    def __init__(self, ai_throttle_mult=1.0, steering_offset: float = 0.0):
         """
         :param ai_throttle_mult: scale throttle in autopilot mode
+        :param steering_offset: additive normalized steering offset applied to final steering (-1..1)
         """
         self.ai_throttle_mult = ai_throttle_mult
+        self.steering_offset = steering_offset
 
     def run(self, mode,
             user_steering, user_throttle,
@@ -681,11 +690,25 @@ class DriveMode:
                  scaled by ai_throttle_mult in autopilot mode
         """
         if mode == 'user':
-            return user_steering, user_throttle
+            steering = user_steering
+            throttle = user_throttle
         elif mode == 'local_angle':
-            return pilot_steering if pilot_steering else 0.0, user_throttle
-        return (pilot_steering if pilot_steering else 0.0,
-               pilot_throttle * self.ai_throttle_mult if pilot_throttle else 0.0)
+            steering = pilot_steering if pilot_steering else 0.0
+            throttle = user_throttle
+        else:
+            steering = pilot_steering if pilot_steering else 0.0
+            throttle = pilot_throttle * self.ai_throttle_mult if pilot_throttle else 0.0
+
+        # apply additive steering offset with clamp
+        if steering is not None:
+            s = steering + self.steering_offset
+            if s > 1.0:
+                s = 1.0
+            elif s < -1.0:
+                s = -1.0
+            steering = s
+
+        return steering, throttle
 
 
 class UserPilotCondition:
@@ -1173,6 +1196,7 @@ if __name__ == '__main__':
         print(args['--meta'])
         model_type = args['--type']
         camera_type = args['--camera']
+        cfg.GYM_CONF['random_start'] = bool(args['--random_start'])
         drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
               model_type=model_type, camera_type=camera_type,
               meta=args['--meta'])
