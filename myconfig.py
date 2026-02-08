@@ -23,7 +23,7 @@ MAX_LOOPS = 1500       # the vehicle loop can abort after this many iterations, 
 # Additive normalized steering offset applied after user/pilot mixing and before actuator output.
 # Units: normalized steering units (-1.0..1.0). Positive shifts steering to the right, negative to the left.
 # Example: STEERING_OFFSET = 0.1 will bias all steering 10% to the right.
-STEERING_OFFSET = 0.1
+STEERING_OFFSET = 0.0
 
 # 
 # #CAMERA
@@ -510,9 +510,9 @@ AUTO_CREATE_NEW_TUB = True     #create a new tub (tub_YY_MM_DD) directory when r
 # #You will want to download the simulator binary from: https://github.com/tawnkramer/donkey_gym/releases/download/v18.9/DonkeySimLinux.zip
 # #then extract that and modify DONKEY_SIM_PATH.
 DONKEY_GYM = True
-DONKEY_SIM_PATH = "donkey-unity-sim/sdsim/Builds/DonkeySimMac/donkey_sim.app/Contents/MacOS/donkey_sim" #"donkey-unity-sim/sdsim/donkey-sim-new.app/Contents/MacOS/donkey_sim" #"/Users/ethankrol/research/gym-donkeycar/sim/DonkeySimMac/donkey_sim.app/Contents/MacOS/donkey_sim"
+DONKEY_SIM_PATH = "/Users/mocha/Documents/Research/TEA/IROS/IROS/Donkey_Run/Donkey_Run/Donkey_Sim.app/Contents/MacOS/donkey_sim"
 DONKEY_GYM_ENV_NAME = "donkey-minimonaco-track-v0" # ("donkey-generated-track-v0"|"donkey-generated-roads-v0"|"donkey-warehouse-v0"|"donkey-avc-sparkfun-v0")
-# ADD RANDOM START LOCATIONS WITH BOOLEAN
+# Add random start boolean to config file that gets sent to the simulator
 GYM_CONF = { "body_style" : "donkey", "body_rgb" : (128, 128, 128), "car_name" : "TEA_LAB", "font_size" : 100, "random_start": False} # body style(donkey|bare|car01) body rgb 0-255
 # GYM_CONF["racer_name"] = "Your Name"
 # GYM_CONF["country"] = "Place"
