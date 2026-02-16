@@ -510,7 +510,7 @@ AUTO_CREATE_NEW_TUB = True     #create a new tub (tub_YY_MM_DD) directory when r
 # #You will want to download the simulator binary from: https://github.com/tawnkramer/donkey_gym/releases/download/v18.9/DonkeySimLinux.zip
 # #then extract that and modify DONKEY_SIM_PATH.
 DONKEY_GYM = True
-DONKEY_SIM_PATH = "/Users/mocha/Documents/Research/TEA/IROS/IROS/Donkey_Run/Donkey_Run/Donkey_Sim.app/Contents/MacOS/donkey_sim"
+DONKEY_SIM_PATH = "/Users/jay/Desktop/5th yr/TEA Lab/donkey-unity-sim/sdsim/donkey_sim.app/Contents/MacOS/donkey_sim"
 DONKEY_GYM_ENV_NAME = "donkey-minimonaco-track-v0" # ("donkey-generated-track-v0"|"donkey-generated-roads-v0"|"donkey-warehouse-v0"|"donkey-avc-sparkfun-v0")
 # Add random start boolean to config file that gets sent to the simulator
 GYM_CONF = { "body_style" : "donkey", "body_rgb" : (128, 128, 128), "car_name" : "TEA_LAB", "font_size" : 100, "random_start": False} # body style(donkey|bare|car01) body rgb 0-255
