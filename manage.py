@@ -30,22 +30,22 @@ except:
     pass
 
 
-import donkeycar.donkeycar as dk
-from donkeycar.donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
-from donkeycar.donkeycar.parts.tub_v2 import TubWriter
-from donkeycar.donkeycar.parts.datastore import TubHandler
-from donkeycar.donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
-from donkeycar.donkeycar.parts.throttle_filter import ThrottleFilter
-from donkeycar.donkeycar.parts.behavior import BehaviorPart
-from donkeycar.donkeycar.parts.file_watcher import FileWatcher
-from donkeycar.donkeycar.parts.launch import AiLaunch
-from donkeycar.donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
-from donkeycar.donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.explode import ExplodeDict
-from donkeycar.donkeycar.parts.transform import Lambda
-from donkeycar.donkeycar.parts.pipe import Pipe
-from donkeycar.donkeycar.utils import *
+import donkeycar as dk
+from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
+from donkeycar.parts.tub_v2 import TubWriter
+from donkeycar.parts.datastore import TubHandler
+from donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
+from donkeycar.parts.throttle_filter import ThrottleFilter
+from donkeycar.parts.behavior import BehaviorPart
+from donkeycar.parts.file_watcher import FileWatcher
+from donkeycar.parts.launch import AiLaunch
+from donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
+from donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
+from donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
+from donkeycar.parts.explode import ExplodeDict
+from donkeycar.parts.transform import Lambda
+from donkeycar.parts.pipe import Pipe
+from donkeycar.utils import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +68,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     noise = ""
     name = ""
     env_name = None
+    steering_bias = 0.0
     # Iterate over the meta list and assign values based on keys
     for item in meta:
         key, value = item.split(":")
@@ -83,6 +84,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             env_name = value
         elif key == "name":
             name = value
+        elif key == "steering_bias":
+            steering_bias = float(value)
 
     if gan_path and gan_type:
         model_type = "linear_with_gan" 
@@ -137,7 +140,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
 
     # add lidar
     if cfg.USE_LIDAR:
-        from donkeycar.donkeycar.parts.lidar import RPLidar
+        from donkeycar.parts.lidar import RPLidar
         if cfg.LIDAR_TYPE == 'RP':
             print("adding RP lidar part")
             lidar = RPLidar(lower_limit = cfg.LIDAR_LOWER_LIMIT, upper_limit = cfg.LIDAR_UPPER_LIMIT)
@@ -151,7 +154,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     #     V.add(lidar, inputs=[], outputs=['lidar/dist'], threaded=True)
 
     if cfg.SHOW_FPS:
-        from donkeycar.donkeycar.parts.fps import FrequencyLogger
+        from donkeycar.parts.fps import FrequencyLogger
         V.add(FrequencyLogger(cfg.FPS_DEBUG_INTERVAL),
               outputs=["fps/current", "fps/fps_list"])
 
@@ -482,6 +485,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # based on the choice of user or autopilot drive mode
     #
     steering_offset = getattr(cfg, 'STEERING_OFFSET', 0.0)
+    if steering_bias != 0.0:
+        steering_offset = steering_bias
     if abs(steering_offset) > 1e-6:
         logger.info(f"Applying steering offset of {steering_offset} (inside DriveMode)")
     V.add(DriveMode(cfg.AI_THROTTLE_MULT, steering_offset),
