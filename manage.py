@@ -30,29 +30,29 @@ except:
     pass
 
 
-import donkeycar.donkeycar as dk
-from donkeycar.donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
-from donkeycar.donkeycar.parts.tub_v2 import TubWriter
-from donkeycar.donkeycar.parts.datastore import TubHandler
-from donkeycar.donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
-from donkeycar.donkeycar.parts.throttle_filter import ThrottleFilter
-from donkeycar.donkeycar.parts.behavior import BehaviorPart
-from donkeycar.donkeycar.parts.file_watcher import FileWatcher
-from donkeycar.donkeycar.parts.launch import AiLaunch
-from donkeycar.donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
-from donkeycar.donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.explode import ExplodeDict
-from donkeycar.donkeycar.parts.transform import Lambda
-from donkeycar.donkeycar.parts.pipe import Pipe
-from donkeycar.donkeycar.utils import *
+import donkeycar as dk
+from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
+from donkeycar.parts.tub_v2 import TubWriter
+from donkeycar.parts.datastore import TubHandler
+from donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
+from donkeycar.parts.throttle_filter import ThrottleFilter
+from donkeycar.parts.behavior import BehaviorPart
+from donkeycar.parts.file_watcher import FileWatcher
+from donkeycar.parts.launch import AiLaunch
+from donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
+from donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
+from donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
+from donkeycar.parts.explode import ExplodeDict
+from donkeycar.parts.transform import Lambda
+from donkeycar.parts.pipe import Pipe
+from donkeycar.utils import *
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
 def drive(cfg, model_path=None, use_joystick=False, model_type=None,
-          camera_type='single', meta=[]):
+          camera_type='single', meta=[], folder_name=''):
     """
     Construct a working robotic vehicle from many parts. Each part runs as a
     job in the Vehicle loop, calling either it's run or run_threaded method
@@ -118,9 +118,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        add_simulator(V, cfg, env_name, noise, name)
+        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
     else:
-        add_simulator(V, cfg)
+        add_simulator(V, cfg, folder_name=folder_name)
 
 
     #
@@ -137,7 +137,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
 
     # add lidar
     if cfg.USE_LIDAR:
-        from donkeycar.donkeycar.parts.lidar import RPLidar
+        from donkeycar.parts.lidar import RPLidar
         if cfg.LIDAR_TYPE == 'RP':
             print("adding RP lidar part")
             lidar = RPLidar(lower_limit = cfg.LIDAR_LOWER_LIMIT, upper_limit = cfg.LIDAR_UPPER_LIMIT)
@@ -151,7 +151,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     #     V.add(lidar, inputs=[], outputs=['lidar/dist'], threaded=True)
 
     if cfg.SHOW_FPS:
-        from donkeycar.donkeycar.parts.fps import FrequencyLogger
+        from donkeycar.parts.fps import FrequencyLogger
         V.add(FrequencyLogger(cfg.FPS_DEBUG_INTERVAL),
               outputs=["fps/current", "fps/fps_list"])
 
@@ -655,7 +655,10 @@ class ToggleRecording:
             recording = self.recording_latch
             self.recording_latch = None
 
-        if recording and mode != 'user' and not self.record_in_autopilot:
+        if self.record_in_autopilot:
+            recording = True
+            
+        elif recording and mode != 'user' and not self.record_in_autopilot:
             logging.info("Ignoring recording in auto-pilot mode")
             recording = False
 
@@ -809,7 +812,7 @@ def add_user_controller(V, cfg, use_joystick, input_image='ui/image_array'):
     return ctr
 
 
-def add_simulator(V, cfg, env_name = "", noise = "", name = ""):
+def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
     # Donkey gym part will output position information if it is configured
     # TODO: the simulation outputs conflict with imu, odometry, kinematics pose estimation and T265 outputs; make them work together.
     if cfg.DONKEY_GYM:
@@ -822,7 +825,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = ""):
                            record_location=cfg.SIM_RECORD_LOCATION, record_gyroaccel=cfg.SIM_RECORD_GYROACCEL,
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE, record_orientation=cfg.SIM_RECORD_ORIENTATION,
-                           delay=cfg.SIM_ARTIFICIAL_LATENCY, name=name)
+                           delay=cfg.SIM_ARTIFICIAL_LATENCY, name=name, folder_name=folder_name)
         threaded = True
         inputs = ['steering', 'throttle']
         outputs = ['cam/image_array']
