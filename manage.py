@@ -69,6 +69,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     name = ""
     env_name = None
     steering_gain = 1.0
+    steering_bias = 0.0
     # Iterate over the meta list and assign values based on keys
     for item in meta:
         key, value = item.split(":")
@@ -86,6 +87,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             name = value
         elif key == "steering_gain":
             steering_gain = float(value)
+        elif key == "steering_bias":
+            steering_bias = float(value)
 
     if gan_path and gan_type:
         model_type = "linear_with_gan" 
@@ -485,6 +488,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # based on the choice of user or autopilot drive mode
     #
     steering_offset = getattr(cfg, 'STEERING_OFFSET', 0.0)
+    if steering_bias != 0.0:
+        steering_offset = steering_bias
     if abs(steering_offset) > 1e-6:
         logger.info(f"Applying steering offset of {steering_offset} (inside DriveMode)")
     V.add(DriveMode(cfg.AI_THROTTLE_MULT, steering_offset, steering_gain),
