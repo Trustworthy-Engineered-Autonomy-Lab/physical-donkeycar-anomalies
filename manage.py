@@ -127,7 +127,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     if env_name:
         add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
     else:
-        add_simulator(V, cfg, folder_name=folder_name)
+        add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name)
 
 
     #

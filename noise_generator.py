@@ -60,7 +60,7 @@ class ImageAugmentor:
     def adjust_contrast(self, image, alpha=1.0, beta=0):
         return cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
-    def add_defocus(self, image, kernel_size):
+    def add_defocus(self, image, kernel_size=7):
         return cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
     def add_glass_blur(self, image, kernel_size):
