@@ -71,6 +71,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     env_name = None
     steering_gain = 1.0
     steering_bias = 0.0
+    num_drop = 0
     # Iterate over the meta list and assign values based on keys
     for item in meta:
         key, value = item.split(":")
@@ -90,6 +91,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             steering_gain = float(value)
         elif key == "steering_bias":
             steering_bias = float(value)
+        elif key == "frame_drop":
+            num_drop = int(value)
 
     if gan_path and gan_type:
         model_type = "linear_with_gan" 
@@ -125,9 +128,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
+        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop)
     else:
-        add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name)
+        add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop)
 
 
     #
@@ -823,7 +826,7 @@ def add_user_controller(V, cfg, use_joystick, input_image='ui/image_array'):
     return ctr
 
 
-def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
+def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0):
     # Donkey gym part will output position information if it is configured
     # TODO: the simulation outputs conflict with imu, odometry, kinematics pose estimation and T265 outputs; make them work together.
     if cfg.DONKEY_GYM:
@@ -836,7 +839,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
                            record_location=cfg.SIM_RECORD_LOCATION, record_gyroaccel=cfg.SIM_RECORD_GYROACCEL,
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE, record_orientation=cfg.SIM_RECORD_ORIENTATION,
-                           delay=cfg.SIM_ARTIFICIAL_LATENCY, name=name, folder_name=folder_name)
+                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name)
         threaded = True
         inputs = ['steering', 'throttle']
         outputs = ['cam/image_array']
