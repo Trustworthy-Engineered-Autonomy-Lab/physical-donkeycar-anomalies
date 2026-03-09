@@ -46,13 +46,15 @@ from donkeycar.parts.explode import ExplodeDict
 from donkeycar.parts.transform import Lambda
 from donkeycar.parts.pipe import Pipe
 from donkeycar.utils import *
+from donkeycar.parts.run_logger import RunLogger
 
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 def drive(cfg, model_path=None, use_joystick=False, model_type=None,
-          camera_type='single', meta=[], folder_name=''):
+          camera_type='single', meta=[], folder_name='', log_dir=None,
+          run_id=0, anomaly_type='normal', intensity_param=0.0, anomaly_flag=0):
     """
     Construct a working robotic vehicle from many parts. Each part runs as a
     job in the Vehicle loop, calling either it's run or run_threaded method
@@ -68,6 +70,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     noise = ""
     name = ""
     env_name = None
+
     # Iterate over the meta list and assign values based on keys
     for item in meta:
         key, value = item.split(":")
@@ -118,9 +121,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
+        gym = add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
     else:
-        add_simulator(V, cfg, folder_name=folder_name)
+        gym = add_simulator(V, cfg, folder_name=folder_name)
 
 
     #
@@ -339,9 +342,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     if model_path:
         # If we have a model, create an appropriate Keras part
         if model_type == "linear_with_gan":
-            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, noise, env_name, name)
+            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, noise, env_name, name, folder_name=folder_name + "/imgs")
         else:
-            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, noise, env_name, name)
+            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, noise, env_name, name, folder_name + "/imgs")
 
         #
         # get callback function to reload the model
@@ -488,6 +491,23 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
           inputs=['user/mode', 'user/angle', 'user/throttle',
                   'pilot/angle', 'pilot/throttle'],
           outputs=['steering', 'throttle'])
+    
+    # new part for csv output of specific values
+    if log_dir:
+        summary_path = os.path.join(os.path.dirname(log_dir), 'summary.csv')
+        run_logger = RunLogger(log_dir=log_dir, summary_path=summary_path,
+                               run_id=run_id, anomaly_type=anomaly_type,
+                               intensity_param=intensity_param, anomaly_flag=anomaly_flag)
+        V.add(run_logger,
+            inputs=['pilot/angle', 'steering',
+                    'pilot/throttle', 'throttle',
+                    'pos/pos_x', 'pos/pos_z',
+                    'gyro/gyro_y', 'pos/speed', 'pos/cte',
+                    'accel/accel_x', 'accel/accel_z', 'yaw', 'pitch', 'roll',
+                    'gym/hit'],
+            outputs=[])
+        if gym:
+            gym.run_logger = run_logger
 
 
     if (cfg.CONTROLLER_TYPE != "pigpio_rc") and (cfg.CONTROLLER_TYPE != "MM1"):
@@ -557,6 +577,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         if cfg.SIM_RECORD_LIDAR:
             inputs += ['lidar/dist_array']
             types  += ['nparray']
+        if cfg.SIM_RECORD_ORIENTATION:
+            inputs += ['roll', 'pitch', 'yaw']
+            types += ['float', 'float', 'float']
 
     if cfg.RECORD_DURING_AI:
         inputs += ['pilot/angle', 'pilot/throttle']
@@ -657,7 +680,7 @@ class ToggleRecording:
 
         if self.record_in_autopilot:
             recording = True
-            
+
         elif recording and mode != 'user' and not self.record_in_autopilot:
             logging.info("Ignoring recording in auto-pilot mode")
             recording = False
@@ -824,8 +847,11 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
         gym = DonkeyGymEnv(cfg.DONKEY_SIM_PATH, host=cfg.SIM_HOST, env_name=env_name, noise = noise, conf=cfg.GYM_CONF,
                            record_location=cfg.SIM_RECORD_LOCATION, record_gyroaccel=cfg.SIM_RECORD_GYROACCEL,
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
-                        #    record_distance=cfg.SIM_RECORD_DISTANCE, record_orientation=cfg.SIM_RECORD_ORIENTATION,
+                        #    record_distance=cfg.SIM_RECORD_DISTANCE
+                           record_orientation=cfg.SIM_RECORD_ORIENTATION,
                            delay=cfg.SIM_ARTIFICIAL_LATENCY, name=name, folder_name=folder_name)
+        
+        gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
         outputs = ['cam/image_array']
@@ -840,10 +866,15 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
             outputs += ['lidar/dist_array']
         # if cfg.SIM_RECORD_DISTANCE:
         #     outputs += ['dist/left', 'dist/right']
-        # if cfg.SIM_RECORD_ORIENTATION:
-        #     outputs += ['roll', 'pitch', 'yaw']
+        if cfg.SIM_RECORD_ORIENTATION:
+            outputs += ['roll', 'pitch', 'yaw']
+        
+        outputs += ['gym/running']
+        outputs += ['gym/hit']
 
         V.add(gym, inputs=inputs, outputs=outputs, threaded=threaded)
+        return gym
+    return None
 
 
 def get_camera(cfg):

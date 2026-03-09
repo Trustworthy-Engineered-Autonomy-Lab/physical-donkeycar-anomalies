@@ -30,22 +30,22 @@ except:
     pass
 
 
-import donkeycar.donkeycar as dk
-from donkeycar.donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
-from donkeycar.donkeycar.parts.tub_v2 import TubWriter
-from donkeycar.donkeycar.parts.datastore import TubHandler
-from donkeycar.donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
-from donkeycar.donkeycar.parts.throttle_filter import ThrottleFilter
-from donkeycar.donkeycar.parts.behavior import BehaviorPart
-from donkeycar.donkeycar.parts.file_watcher import FileWatcher
-from donkeycar.donkeycar.parts.launch import AiLaunch
-from donkeycar.donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
-from donkeycar.donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
-from donkeycar.donkeycar.parts.explode import ExplodeDict
-from donkeycar.donkeycar.parts.transform import Lambda
-from donkeycar.donkeycar.parts.pipe import Pipe
-from donkeycar.donkeycar.utils import *
+import donkeycar as dk
+from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
+from donkeycar.parts.tub_v2 import TubWriter
+from donkeycar.parts.datastore import TubHandler
+from donkeycar.parts.controller import LocalWebController, WebFpv, JoystickController
+from donkeycar.parts.throttle_filter import ThrottleFilter
+from donkeycar.parts.behavior import BehaviorPart
+from donkeycar.parts.file_watcher import FileWatcher
+from donkeycar.parts.launch import AiLaunch
+from donkeycar.parts.kinematics import NormalizeSteeringAngle, UnnormalizeSteeringAngle, TwoWheelSteeringThrottle
+from donkeycar.parts.kinematics import Unicycle, InverseUnicycle, UnicycleUnnormalizeAngularVelocity
+from donkeycar.parts.kinematics import Bicycle, InverseBicycle, BicycleUnnormalizeAngularVelocity
+from donkeycar.parts.explode import ExplodeDict
+from donkeycar.parts.transform import Lambda
+from donkeycar.parts.pipe import Pipe
+from donkeycar.utils import *
 from manage import drive
 
 logger = logging.getLogger(__name__)
@@ -62,21 +62,24 @@ if __name__ == '__main__':
         camera_type = args['--camera']
         iterations = int(args['--trials'])
         trial_name = args['--trial_name']
+        meta_list = args['--meta'] or []
+        anomaly_type = meta_list[0].split(':')[0] if meta_list else 'normal'
+        intensity_param = float(meta_list[0].split(':')[1]) if meta_list and ':' in meta_list[0] else 0.0
+        anomaly_flag = len(meta_list)
         cfg.GYM_CONF['random_start'] = bool(args['--random_start'])
 
         # Need to make new directory for this trial and save all the info to this one.
-        path = f'trials/{trial_name}'
-        if os.path.exists(path):
-            print('path already exists')
-        else:
-            os.makedirs(f'trials/{trial_name}')
-
-        
+        timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
+        session_dir = os.path.join('trials', anomaly_type, timestamp)
+        runs_dir = os.path.join(session_dir, 'runs')
+        os.makedirs(runs_dir, exist_ok=True)
 
         for i in range(iterations):
-            trial_path = path + '_' + str(i)
+            log_dir = os.path.join(runs_dir, f'log_{i}.csv')
             drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
                 model_type=model_type, camera_type=camera_type,
-                meta=args['--meta'],folder_name=trial_path)
+                meta=[], folder_name=session_dir + '/', log_dir=log_dir,
+                run_id=i, anomaly_type=anomaly_type,
+                intensity_param=intensity_param, anomaly_flag=anomaly_flag)
     
     

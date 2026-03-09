@@ -12,7 +12,7 @@
 # 
 # #PATHS
 # CAR_PATH = PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
-# DATA_PATH = os.path.join(CAR_PATHa, 'data')
+# DATA_PATH = os.path.join(CAR_PATH, 'data')
 # MODELS_PATH = os.path.join(CAR_PATH, 'models')
 # 
 # #VEHICLE
@@ -372,7 +372,7 @@ WEB_INIT_MODE = "local"              # which control mode to start in. one of us
 # USE_JOYSTICK_AS_DEFAULT = False      #when starting the manage.py, when True, will not require a --js option to use the joystick
 # JOYSTICK_MAX_THROTTLE = 0.5         #this scalar is multiplied with the -1 to 1 throttle value to limit the maximum throttle. This can help if you drop the controller or just don't need the full speed available.
 # JOYSTICK_STEERING_SCALE = 1.0       #some people want a steering that is less sensitve. This scalar is multiplied with the steering -1 to 1. It can be negative to reverse dir.
-AUTO_RECORD_ON_THROTTLE = False      #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
+AUTO_RECORD_ON_THROTTLE = False       #if true, we will record whenever throttle is not zero. if false, you must manually toggle recording with some other trigger. Usually circle button on joystick.
 # CONTROLLER_TYPE = 'xbox'            #(ps3|ps4|xbox|pigpio_rc|nimbus|wiiu|F710|rc3|MM1|custom) custom will run the my_joystick.py controller written by the `donkey createjs` command
 # USE_NETWORKED_JS = False            #should we listen for remote joystick control over the network?
 # NETWORK_JS_SERVER_IP = None         #when listening for network joystick control, which ip is serving this information
@@ -510,7 +510,7 @@ AUTO_CREATE_NEW_TUB = True     #create a new tub (tub_YY_MM_DD) directory when r
 # #You will want to download the simulator binary from: https://github.com/tawnkramer/donkey_gym/releases/download/v18.9/DonkeySimLinux.zip
 # #then extract that and modify DONKEY_SIM_PATH.
 DONKEY_GYM = True
-DONKEY_SIM_PATH = "/Users/mocha/Documents/Research/TEA/IROS/IROS/Donkey_Run/Donkey_Run/Donkey_Sim.app/Contents/MacOS/donkey_sim"
+DONKEY_SIM_PATH = "donkey-unity-sim/sdsim/Builds/DonkeySimMac/donkey_sim.app/Contents/MacOS/donkey_sim"
 DONKEY_GYM_ENV_NAME = "donkey-minimonaco-track-v0" # ("donkey-generated-track-v0"|"donkey-generated-roads-v0"|"donkey-warehouse-v0"|"donkey-avc-sparkfun-v0")
 # Add random start boolean to config file that gets sent to the simulator
 GYM_CONF = { "body_style" : "donkey", "body_rgb" : (128, 128, 128), "car_name" : "TEA_LAB", "font_size" : 100, "random_start": False} # body style(donkey|bare|car01) body rgb 0-255
@@ -525,6 +525,7 @@ GYM_CONF = { "body_style" : "donkey", "body_rgb" : (128, 128, 128), "car_name" :
 SIM_RECORD_LOCATION = True
 SIM_RECORD_GYROACCEL= True
 SIM_RECORD_VELOCITY = True
+SIM_RECORD_ORIENTATION = True
 # SIM_RECORD_LIDAR = False
 # 
 # #publish camera over network
