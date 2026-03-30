@@ -19,6 +19,7 @@ from docopt import docopt
 import os
 import time
 import logging
+import random
 
 #
 # import cv2 early to avoid issue with importing after tensorflow
@@ -75,11 +76,14 @@ if __name__ == '__main__':
         os.makedirs(runs_dir, exist_ok=True)
 
         for i in range(iterations):
+            # Choose one of 304 random starting positions.
+            start_pos = random.randint(0, 303)
+            cfg.GYM_CONF['start_pos'] = start_pos
             log_dir = os.path.join(runs_dir, f'log_{i}.csv')
             drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
                 model_type=model_type, camera_type=camera_type,
                 meta=[], folder_name=session_dir + '/', log_dir=log_dir,
                 run_id=i, anomaly_type=anomaly_type,
-                intensity_param=intensity_param, anomaly_flag=anomaly_flag)
+                intensity_param=intensity_param, anomaly_flag=anomaly_flag, runs_dir=runs_dir)
     
     

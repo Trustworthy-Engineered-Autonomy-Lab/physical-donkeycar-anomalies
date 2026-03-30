@@ -54,7 +54,7 @@ logging.basicConfig(level=logging.INFO)
 
 def drive(cfg, model_path=None, use_joystick=False, model_type=None,
           camera_type='single', meta=[], folder_name='', log_dir=None,
-          run_id=0, anomaly_type='normal', intensity_param=0.0, anomaly_flag=0):
+          run_id=0, anomaly_type='normal', intensity_param=0.0, anomaly_flag=0, runs_dir=None):
     """
     Construct a working robotic vehicle from many parts. Each part runs as a
     job in the Vehicle loop, calling either it's run or run_threaded method
@@ -342,9 +342,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     if model_path:
         # If we have a model, create an appropriate Keras part
         if model_type == "linear_with_gan":
-            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, noise, env_name, name, folder_name=folder_name + "/imgs")
+            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, noise, env_name, name, folder_name=runs_dir + f"/{run_id}/imgs/")
         else:
-            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, noise, env_name, name, folder_name + "/imgs")
+            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, noise, env_name, name, runs_dir + f"/{run_id}/imgs/")
 
         #
         # get callback function to reload the model
@@ -495,9 +495,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # new part for csv output of specific values
     if log_dir:
         summary_path = os.path.join(os.path.dirname(log_dir), 'summary.csv')
-        run_logger = RunLogger(log_dir=log_dir, summary_path=summary_path,
+        run_logger = RunLogger(log_dir=runs_dir + f'/{run_id}', summary_path=summary_path,
                                run_id=run_id, anomaly_type=anomaly_type,
-                               intensity_param=intensity_param, anomaly_flag=anomaly_flag)
+                               intensity_param=intensity_param, anomaly_flag=anomaly_flag, start_pos = int(cfg.GYM_CONF['start_pos']))
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
                     'pilot/throttle', 'throttle',
