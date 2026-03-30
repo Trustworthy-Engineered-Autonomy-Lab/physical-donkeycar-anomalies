@@ -60,7 +60,7 @@ class ImageAugmentor:
     def adjust_contrast(self, image, alpha=1.0, beta=0):
         return cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
-    def add_defocus(self, image, kernel_size):
+    def add_defocus(self, image, kernel_size=7):
         return cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
     def add_glass_blur(self, image, kernel_size):
@@ -118,4 +118,34 @@ class ImageAugmentor:
         cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)  # Modify output instead of image directly
         
         return output
+    
+    def add_mud_blob(self, image, occlusion_fraction=.4, center=None):
+        h, w, c = image.shape
+
+        total_pixels = h*w
+        covered_pixels = total_pixels*occlusion_fraction
+
+        radius = int(np.sqrt(covered_pixels / np.pi))
+
+
+
+
+        if center is not None:
+            center_x, center_y = center
+        else:
+            center_x = np.random.randint(radius, w - radius) if radius < w // 2 else w//2
+            center_y = np.random.randint(radius, h - radius) if radius < h // 2 else h//2
+        
+
+        mask = np.zeros((h, w), dtype=np.float32)
+        cv2.circle(mask, (center_x, center_y), radius, 1.0, -1)
+
+        mud_color = np.array([70, 50, 30], dtype=np.uint8)
+        mud_texture = np.full_like(image, mud_color)
+
+        mask_3ch = mask[:, :, np.newaxis]
+
+        output = (image * (1-mask_3ch) + mud_texture * mask_3ch).astype(np.uint8)
+        return output
+
 

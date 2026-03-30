@@ -49,6 +49,7 @@ from donkeycar.utils import *
 from donkeycar.parts.run_logger import RunLogger
 
 
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -70,6 +71,15 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     noise = ""
     name = ""
     env_name = None
+    steering_gain = 1.0
+    steering_bias = 0.0
+    num_drop = 0
+    brightness_coeff = 1.0
+    cmd_latency = 0
+    mass_scale = 1.0
+    cam_pitch = 0.0
+    occlusion_fraction = .4
+    friction_scale = 1.0
 
     # Iterate over the meta list and assign values based on keys
     for item in meta:
@@ -86,6 +96,25 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             env_name = value
         elif key == "name":
             name = value
+        elif key == "steering_gain":
+            steering_gain = float(value)
+        elif key == "steering_bias":
+            steering_bias = float(value)
+        elif key == "frame_drop":
+            num_drop = int(value)
+        elif key == "brightness_coeff":
+            brightness_coeff = float(value)
+        elif key == "cmd_latency":
+            cmd_latency = int(value)
+        elif key == "mass_scale":
+            mass_scale = float(value)
+        elif key == "cam_pitch":
+            cam_pitch = float(value)
+        elif key == "occlusion_fraction":
+            occlusion_fraction = float(value)
+        elif key == "friction_scale":
+            friction_scale = float(value)
+
 
     if gan_path and gan_type:
         model_type = "linear_with_gan" 
@@ -121,9 +150,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        gym = add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name)
+        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
     else:
-        gym = add_simulator(V, cfg, folder_name=folder_name)
+        add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
 
 
     #
@@ -485,9 +514,11 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # based on the choice of user or autopilot drive mode
     #
     steering_offset = getattr(cfg, 'STEERING_OFFSET', 0.0)
+    if steering_bias != 0.0:
+        steering_offset = steering_bias
     if abs(steering_offset) > 1e-6:
         logger.info(f"Applying steering offset of {steering_offset} (inside DriveMode)")
-    V.add(DriveMode(cfg.AI_THROTTLE_MULT, steering_offset),
+    V.add(DriveMode(cfg.AI_THROTTLE_MULT, steering_offset, steering_gain),
           inputs=['user/mode', 'user/angle', 'user/throttle',
                   'pilot/angle', 'pilot/throttle'],
           outputs=['steering', 'throttle'])
@@ -694,13 +725,14 @@ class ToggleRecording:
 
 
 class DriveMode:
-    def __init__(self, ai_throttle_mult=1.0, steering_offset: float = 0.0):
+    def __init__(self, ai_throttle_mult=1.0, steering_offset: float = 0.0, steering_gain: float = 1.0):
         """
         :param ai_throttle_mult: scale throttle in autopilot mode
         :param steering_offset: additive normalized steering offset applied to final steering (-1..1)
         """
         self.ai_throttle_mult = ai_throttle_mult
         self.steering_offset = steering_offset
+        self.steering_gain = steering_gain
 
     def run(self, mode,
             user_steering, user_throttle,
@@ -727,7 +759,8 @@ class DriveMode:
 
         # apply additive steering offset with clamp
         if steering is not None:
-            s = steering + self.steering_offset
+            s = steering * self.steering_gain
+            s = s + self.steering_offset
             if s > 1.0:
                 s = 1.0
             elif s < -1.0:
@@ -835,7 +868,7 @@ def add_user_controller(V, cfg, use_joystick, input_image='ui/image_array'):
     return ctr
 
 
-def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
+def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0, brightness_coeff = 1.0, cmd_latency=0, mass_scale = 1.0, cam_pitch = 0.0, occlusion_fraction = .4, friction_scale = 1.0):
     # Donkey gym part will output position information if it is configured
     # TODO: the simulation outputs conflict with imu, odometry, kinematics pose estimation and T265 outputs; make them work together.
     if cfg.DONKEY_GYM:
@@ -849,8 +882,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name=""):
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE
                            record_orientation=cfg.SIM_RECORD_ORIENTATION,
-                           delay=cfg.SIM_ARTIFICIAL_LATENCY, name=name, folder_name=folder_name)
-        
+                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name, brightness_coeff =brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
