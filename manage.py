@@ -150,9 +150,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
+        gym = add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
     else:
-        add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
+        gym = add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
 
 
     #

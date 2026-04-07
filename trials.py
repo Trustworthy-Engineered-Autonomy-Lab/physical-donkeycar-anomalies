@@ -75,9 +75,18 @@ if __name__ == '__main__':
         runs_dir = os.path.join(session_dir, 'runs')
         os.makedirs(runs_dir, exist_ok=True)
 
+        # Log the used start positions so that we don't reuse them
+        used_starts = set()
+
         for i in range(iterations):
             # Choose one of 304 random starting positions.
             start_pos = random.randint(0, 303)
+            if len(used_starts) == 304:
+                print('Number of iterations has exceeded the number of start positions available.')
+            while start_pos in used_starts:
+                start_pos = random.randint(0,303)
+            used_starts.add(start_pos)
+
             cfg.GYM_CONF['start_pos'] = start_pos
             log_dir = os.path.join(runs_dir, f'log_{i}.csv')
             drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
