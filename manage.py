@@ -80,6 +80,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     cam_pitch = 0.0
     occlusion_fraction = .4
     friction_scale = 1.0
+    drag_force = 0.0
+    blur_kernel = 7
 
     # Iterate over the meta list and assign values based on keys
     for item in meta:
@@ -114,6 +116,10 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             occlusion_fraction = float(value)
         elif key == "friction_scale":
             friction_scale = float(value)
+        elif key == "drag_force":
+            drag_force = float(value)
+        elif key == "blur_kernel":
+            blur_kernel = int(value)
 
 
     if gan_path and gan_type:
@@ -879,7 +885,7 @@ def add_user_controller(V, cfg, use_joystick, input_image='ui/image_array'):
     return ctr
 
 
-def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0, brightness_coeff = 1.0, cmd_latency=0, mass_scale = 1.0, cam_pitch = 0.0, occlusion_fraction = .4, friction_scale = 1.0):
+def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0, brightness_coeff = 1.0, cmd_latency=0, mass_scale = 1.0, cam_pitch = 0.0, occlusion_fraction = .4, friction_scale = 1.0, drag_force = 0.0, blur_kernel = 7):
     # Donkey gym part will output position information if it is configured
     # TODO: the simulation outputs conflict with imu, odometry, kinematics pose estimation and T265 outputs; make them work together.
     if cfg.DONKEY_GYM:
@@ -893,7 +899,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE
                            record_orientation=cfg.SIM_RECORD_ORIENTATION,
-                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name, brightness_coeff =brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale)
+                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name, brightness_coeff =brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, drag_force = drag_force, blur_kernel = blur_kernel)
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
