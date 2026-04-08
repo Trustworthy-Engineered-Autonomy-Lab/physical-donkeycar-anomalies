@@ -55,7 +55,7 @@ logging.basicConfig(level=logging.INFO)
 
 def drive(cfg, model_path=None, use_joystick=False, model_type=None,
           camera_type='single', meta=[], folder_name='', log_dir=None,
-          run_id=0, anomaly_type='normal', intensity_param=0.0, anomaly_flag=0, runs_dir=None):
+          run_id=0, anomaly_type='normal', intensity_param=0.0, anomaly_flag=None, runs_dir=None):
     """
     Construct a working robotic vehicle from many parts. Each part runs as a
     job in the Vehicle loop, calling either it's run or run_threaded method
@@ -525,10 +525,21 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     
     # new part for csv output of specific values
     if log_dir:
+        # Create run directory structure if it doesn't exist
+        run_dir = runs_dir + f'/{run_id}'
+        os.makedirs(run_dir, exist_ok=True)
+        imgs_dir = os.path.join(run_dir, 'imgs')
+        os.makedirs(imgs_dir, exist_ok=True)
+        
         summary_path = os.path.join(os.path.dirname(log_dir), 'summary.csv')
-        run_logger = RunLogger(log_dir=runs_dir + f'/{run_id}', summary_path=summary_path,
+        run_logger = RunLogger(log_dir=run_dir, summary_path=summary_path,
                                run_id=run_id, anomaly_type=anomaly_type,
-                               intensity_param=intensity_param, anomaly_flag=anomaly_flag, start_pos = int(cfg.GYM_CONF['start_pos']))
+                               intensity_param=intensity_param, anomaly_flag=anomaly_flag, start_pos = int(cfg.GYM_CONF['start_pos']),
+                               steering_gain=steering_gain, steering_bias=steering_bias, 
+                               frame_drop=num_drop, brightness_coeff=brightness_coeff, 
+                               cmd_latency=cmd_latency, mass_scale=mass_scale, 
+                               cam_pitch=cam_pitch, occlusion_fraction=occlusion_fraction, 
+                               friction_scale=friction_scale)
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
                     'pilot/throttle', 'throttle',
