@@ -1272,6 +1272,7 @@ if __name__ == '__main__':
         model_type = args['--type']
         camera_type = args['--camera']
         cfg.GYM_CONF['random_start'] = bool(args['--random_start'])
+        cfg.GYM_CONF.setdefault('start_pos', 0)
         drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
               model_type=model_type, camera_type=camera_type,
               meta=args['--meta'])
