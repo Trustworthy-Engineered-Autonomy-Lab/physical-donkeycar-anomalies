@@ -1,0 +1,511 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] /Count 6 >>
+endobj
+5 0 obj
+<< /Length 4485 >>
+stream
+BT /F2 22.00 Tf 54.00 734.00 Td 0 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+54 706.00 504 0.6 re f
+BT /F1 10.50 Tf 54.00 683.00 Td 0 g (Source: anomalies_guide.pdf, checked against the local implementation in manage.py,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 668.80 Td 0 g (donkeycar/donkeycar/parts/dgym.py, donkeycar/donkeycar/parts/models/noise_generator.py,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 654.60 Td 0 g (donkey-unity-sim/sdsim/Assets/Scripts/Car.cs, WheelPhys.cs, CameraSensor.cs, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 640.40 Td 0 g (TcpCarHandler.cs.) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 611.20 Td 0 g (How anomaly injection works) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 585.20 Td 0 g (All anomaly settings enter through repeated manage.py drive --meta key:value arguments.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 571.00 Td 0 g (manage.py parses those key-value pairs into scalar settings such as friction_scale,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 556.80 Td 0 g (mass_scale, blur_kernel, steering_gain, and steering_bias. The noise and name keys also) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 542.60 Td 0 g (label the output folder, so the run artifacts can be tied back to the anomaly configuration.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 520.40 Td 0 g (There are three implementation paths.) Tj ET
+0 g
+BT /F1 10.20 Tf 54.00 498.20 Td 0 g (- Unity-side dynamics and camera-pose anomalies are sent once at simulator startup in a) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 484.40 Td 0 g (physics_config message. This path handles friction_scale, mass_scale, drag_force, and) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 470.60 Td 0 g (cam_pitch.) Tj ET
+0 g
+BT /F1 10.20 Tf 54.00 454.80 Td 0 g (- Image-space sensing anomalies are applied inside DonkeyGymEnv.run_threaded before the image) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 441.00 Td 0 g (is returned to the controller. These require the noise label to contain the matching name,) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 427.20 Td 0 g (such as noise:mud, noise:blur, or noise:brightness.) Tj ET
+0 g
+BT /F1 10.20 Tf 54.00 411.40 Td 0 g (- Control anomalies alter commands after the neural pilot has produced steering and throttle.) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 397.60 Td 0 g (steering_gain and steering_bias are applied in DriveMode, while cmd_latency delays the) Tj ET
+0 g
+BT /F1 10.20 Tf 68.00 383.80 Td 0 g (action stored in the simulator environment.) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 356.00 Td 0 g (Dynamics anomalies) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 326.00 Td 0 g (Friction Loss) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 304.00 Td 0 g (Parameter: friction_scale. Guide range: 0.1 to 1.0. Typical settings are 0.9 for a painted) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 289.80 Td 0 g (lane, 0.6 for wet road, and 0.1 for icy road.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 267.60 Td 0 g (Relevant scripts to inspect: manage.py parses the --meta value and calls add_simulator;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 253.40 Td 0 g (donkeycar/donkeycar/parts/dgym.py sends the physics_config message; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 239.20 Td 0 g (sim/sdsim/Assets/Scripts/tcp/TcpCarHandler.cs receives physics_config; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 225.00 Td 0 g (sim/sdsim/Assets/Scripts/Car.cs applies SetFrictionScale; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 210.80 Td 0 g (sim/sdsim/Assets/Scripts/WheelPhys.cs applies the scaled wheel friction each physics tick.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 188.60 Td 0 g (Friction loss reduces tire grip in Unity. When friction_scale is non-default, Python sends) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 174.40 Td 0 g (it in the physics_config message. TcpCarHandler receives that message and calls) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 160.20 Td 0 g (Car.SetFrictionScale. The car then writes the scale into each WheelPhys component.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 138.00 Td 0 g (WheelPhys applies the scale every physics tick. It takes each wheel collider's original) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 123.80 Td 0 g (forward and sideways friction stiffness, multiplies by the ground material's static) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 109.60 Td 0 g (friction, then multiplies by friction_scale. A lower value reduces both braking/drive) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 95.40 Td 0 g (traction and lateral cornering grip. In practice the car becomes easier to slide, less able) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 81.20 Td 0 g (to hold the lane during turns, and slower to recover after steering corrections.) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 1) Tj ET
+0 g
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 4589 >>
+stream
+BT /F2 9.00 Tf 54.00 734.00 Td 0.4 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 706.00 Td 0 g (Vehicle Mass) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 684.00 Td 0 g (Parameter: mass_scale. Guide range: 1.0 to 2.0. Typical settings are 1.2, 1.5, and 2.0.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 661.80 Td 0 g (Relevant scripts to inspect: manage.py parses mass_scale and forwards it through) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 647.60 Td 0 g (add_simulator; donkeycar/donkeycar/parts/dgym.py includes mass_scale in physics_config;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 633.40 Td 0 g (donkey-unity-sim/sdsim/Assets/Scripts/tcp/TcpCarHandler.cs dispatches the setting; donkey-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 619.20 Td 0 g (unity-sim/sdsim/Assets/Scripts/Car.cs implements SetMassScale.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 597.00 Td 0 g (Vehicle mass changes the rigidbody mass in Unity. Python sends mass_scale in physics_config,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 582.80 Td 0 g (and the Unity car sets rb.mass to originalMass multiplied by the scale.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 560.60 Td 0 g (Increasing mass does not directly change the pilot's requested steering or throttle. It) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 546.40 Td 0 g (changes the physics response to those commands. With more mass, the same motor torque) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 532.20 Td 0 g (produces less acceleration, braking takes longer, and steering corrections have more inertia) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 518.00 Td 0 g (to overcome. The controller may still output the same nominal commands, but the vehicle) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 503.80 Td 0 g (reacts more sluggishly and can overshoot because momentum carries it forward.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 477.60 Td 0 g (Asymmetric Drag) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 455.60 Td 0 g (Parameter: drag_force in newtons. Guide range: 0 to 600. Typical settings are 100 for low) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 441.40 Td 0 g (tire pressure, 300 for crosswind, and 600 for tire blowout.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 419.20 Td 0 g (Relevant scripts to inspect: manage.py parses drag_force and add_simulator accepts it;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 405.00 Td 0 g (donkeycar/donkeycar/parts/dgym.py includes drag_force in physics_config; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 390.80 Td 0 g (sim/sdsim/Assets/Scripts/tcp/TcpCarHandler.cs dispatches the setting; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 376.60 Td 0 g (sim/sdsim/Assets/Scripts/Car.cs implements SetDragForce and applies the force in) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 362.40 Td 0 g (FixedUpdate. Implementation note: in the checked manage.py drive setup, drag_force is parsed) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 348.20 Td 0 g (but the shown calls to add_simulator do not forward drag_force, so this is the first place) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 334.00 Td 0 g (to inspect if the guide command does not visibly activate drag.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 311.80 Td 0 g (Asymmetric drag adds a constant backward force at one off-center wheel in Unity. When) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 297.60 Td 0 g (drag_force reaches DonkeyGymEnv, Python sends it in physics_config. Unity stores the force) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 283.40 Td 0 g (in Car.SetDragForce and enables the asymmetric drag branch when the force is nonzero.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 261.20 Td 0 g (Every physics tick, the car checks its forward speed. If it is moving, it gets the world) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 247.00 Td 0 g (position of the front-right wheel collider and applies a force opposite the direction of) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 232.80 Td 0 g (travel at that point. Because the force is not applied at the center of mass, it creates a) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 218.60 Td 0 g (yaw torque in addition to slowing the car. That yaw bias pulls the car toward the affected) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 204.40 Td 0 g (side, which mimics a dragging tire, a strong side force, or a blowout-like failure. The) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 190.20 Td 0 g (guide notes that small forces are too weak for this 50 kg rigidbody, so visible behavior) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 176.00 Td 0 g (needs values in the hundreds of newtons.) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 146.80 Td 0 g (Sensing anomalies) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 116.80 Td 0 g (Mud Blob) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 94.80 Td 0 g (Parameter: occlusion_fraction. Guide range: 0 to 1. Typical settings are 0.1, 0.4, and 0.9.) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 2) Tj ET
+0 g
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 4640 >>
+stream
+BT /F2 9.00 Tf 54.00 734.00 Td 0.4 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 710.00 Td 0 g (Relevant scripts to inspect: manage.py parses occlusion_fraction and noise;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 695.80 Td 0 g (donkeycar/donkeycar/parts/dgym.py checks whether "mud" is present in the noise label,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 681.60 Td 0 g (chooses the fixed mud center, and calls the augmentor;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 667.40 Td 0 g (donkeycar/donkeycar/parts/models/noise_generator.py implements ImageAugmentor.add_mud_blob.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 653.20 Td 0 g (There is also a top-level noise_generator.py with the same augmentor logic.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 631.00 Td 0 g (Mud blob is an image-space anomaly, so it only activates when the noise label contains mud.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 616.80 Td 0 g (In run_threaded, the code chooses a mud center the first time it sees the anomaly and then) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 602.60 Td 0 g (reuses that center for the rest of the run.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 580.40 Td 0 g (The blob area is derived from occlusion_fraction. The code computes covered_pixels as) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 566.20 Td 0 g (image_width times image_height times occlusion_fraction, converts that area into a circular) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 552.00 Td 0 g (radius, and draws an opaque brown circle. Pixels inside the circle are replaced by the mud) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 537.80 Td 0 g (color. Because the center is fixed after initialization, the occlusion behaves like) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 523.60 Td 0 g (something stuck to the camera lens rather than random dirt appearing independently on every) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 509.40 Td 0 g (frame.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 483.20 Td 0 g (Camera Pitch Shift) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 461.20 Td 0 g (Parameter: cam_pitch in degrees. Guide range: -30 to 0. Typical settings are -5, -15, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 447.00 Td 0 g (-30.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 424.80 Td 0 g (Relevant scripts to inspect: manage.py parses cam_pitch and forwards it through) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 410.60 Td 0 g (add_simulator; donkeycar/donkeycar/parts/dgym.py sends it in physics_config; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 396.40 Td 0 g (sim/sdsim/Assets/Scripts/tcp/TcpCarHandler.cs dispatches the setting; donkey-unity-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 382.20 Td 0 g (sim/sdsim/Assets/Scripts/camera/CameraSensor.cs implements SetPitchOffset.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 360.00 Td 0 g (Camera pitch is a Unity-side camera pose anomaly. Python sends cam_pitch in physics_config,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 345.80 Td 0 g (TcpCarHandler receives it, and CameraSensor.SetPitchOffset adds the requested pitch offset) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 331.60 Td 0 g (to the camera sensor's original local rotation.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 309.40 Td 0 g (A negative pitch tilts the rendered camera view away from its normal calibration. The neural) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 295.20 Td 0 g (controller still receives an image with the same pixel dimensions, but the track geometry) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 281.00 Td 0 g (appears at a different vertical position and with a different perspective. This can make the) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 266.80 Td 0 g (learned lane-following features look shifted or compressed relative to training data.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 240.60 Td 0 g (Frame Dropping) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 218.60 Td 0 g (Parameter: frame_drop, called num_drop internally. Guide range: 1 to 10. Typical settings) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 204.40 Td 0 g (are 2, 5, and 10.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 182.20 Td 0 g (Relevant scripts to inspect: manage.py parses frame_drop into num_drop and forwards it) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 168.00 Td 0 g (through add_simulator; donkeycar/donkeycar/parts/dgym.py stores num_drop, maintains) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 153.80 Td 0 g (drop_counter and frozen_frame, and returns the stale frame from run_threaded.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 131.60 Td 0 g (Frame dropping freezes the visual input for N-1 out of every N run_threaded calls. When the) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 117.40 Td 0 g (drop counter is zero, the current simulator frame is copied into frozen_frame. The counter) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 103.20 Td 0 g (then advances modulo N, and the frozen image is returned until the next refresh.) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 3) Tj ET
+0 g
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 4266 >>
+stream
+BT /F2 9.00 Tf 54.00 734.00 Td 0.4 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 710.00 Td 0 g (Only the image is frozen. The simulator keeps stepping, telemetry keeps updating, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 695.80 Td 0 g (control commands keep being sent. This creates a stale-perception failure: the controller is) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 681.60 Td 0 g (steering from an older view of the track while the car has already moved to a new pose.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 655.40 Td 0 g (Visual Blur) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 633.40 Td 0 g (Parameter: blur_kernel. Guide range: odd values from 3 to 15. Typical settings are 3, 7, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 619.20 Td 0 g (15.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 597.00 Td 0 g (Relevant scripts to inspect: manage.py parses blur_kernel and noise;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 582.80 Td 0 g (donkeycar/donkeycar/parts/dgym.py checks whether "blur" is present in the noise label and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 568.60 Td 0 g (calls the augmentor; donkeycar/donkeycar/parts/models/noise_generator.py implements) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 554.40 Td 0 g (ImageAugmentor.add_defocus using OpenCV GaussianBlur. There is also a top-level) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 540.20 Td 0 g (noise_generator.py with the same augmentor logic.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 518.00 Td 0 g (Visual blur is an image-space anomaly, so the noise label must contain blur. run_threaded) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 503.80 Td 0 g (passes the camera image through ImageAugmentor.add_defocus, which applies OpenCV) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 489.60 Td 0 g (GaussianBlur with a square kernel of blur_kernel by blur_kernel.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 467.40 Td 0 g (The kernel must be odd because OpenCV's Gaussian blur requires odd kernel dimensions. Larger) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 453.20 Td 0 g (kernels spread each pixel over a wider neighborhood, removing high-frequency lane edges and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 439.00 Td 0 g (texture cues. The controller still sees the same frame size and colors, but the crisp) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 424.80 Td 0 g (boundary evidence it learned from becomes weaker.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 398.60 Td 0 g (Brightness) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 376.60 Td 0 g (Parameter: brightness_coeff. Guide range: 0.1 to 3.0. Typical settings are 0.5, 1.5, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 362.40 Td 0 g (3.0.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 340.20 Td 0 g (Relevant scripts to inspect: manage.py parses brightness_coeff and noise;) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 326.00 Td 0 g (donkeycar/donkeycar/parts/dgym.py checks whether "brightness" is present in the noise label) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 311.80 Td 0 g (and calls the augmentor; donkeycar/donkeycar/parts/models/noise_generator.py implements) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 297.60 Td 0 g (ImageAugmentor.change_brightness. There is also a top-level noise_generator.py with the same) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 283.40 Td 0 g (augmentor logic.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 261.20 Td 0 g (Brightness is an image-space anomaly, so the noise label must contain brightness. The image) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 247.00 Td 0 g (is converted from RGB to HLS color space. The lightness channel is multiplied by) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 232.80 Td 0 g (brightness_coeff, clipped at 255, and converted back to RGB.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 210.60 Td 0 g (A coefficient below 1.0 darkens the scene, while a coefficient above 1.0 brightens it. Hue) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 196.40 Td 0 g (and saturation are preserved more directly than they would be with a raw RGB multiply, but) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 182.20 Td 0 g (saturation and contrast can still appear distorted after clipping. At high brightness, lane) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 168.00 Td 0 g (markings and road regions can wash together because many pixels saturate at maximum) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 153.80 Td 0 g (lightness.) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 124.60 Td 0 g (Control anomalies) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 94.60 Td 0 g (Command Latency) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 4) Tj ET
+0 g
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 4754 >>
+stream
+BT /F2 9.00 Tf 54.00 734.00 Td 0.4 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 710.00 Td 0 g (Parameter: cmd_latency in frames. Guide range: N greater than or equal to 0. Typical) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 695.80 Td 0 g (settings are 2, 6, and 15.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 673.60 Td 0 g (Relevant scripts to inspect: manage.py parses cmd_latency and forwards it through) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 659.40 Td 0 g (add_simulator; donkeycar/donkeycar/parts/dgym.py creates the FIFO command queue and applies) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 645.20 Td 0 g (delayed actions in run_threaded.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 623.00 Td 0 g (Command latency delays the action applied to the simulator. In run_threaded, the current) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 608.80 Td 0 g (steering, throttle, and brake command is appended to a FIFO queue. Once the queue length) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 594.60 Td 0 g (exceeds cmd_latency, the oldest command is popped and becomes the active simulator action.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 572.40 Td 0 g (During the warm-up period before the queue is full, the simulator keeps its previous default) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 558.20 Td 0 g (action, effectively zeros at startup. After warm-up, the car is always executing commands) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 544.00 Td 0 g (from several frames ago. This is dangerous for lane following because steering corrections) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 529.80 Td 0 g (arrive after the visual situation that caused them has already passed.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 503.60 Td 0 g (Steering Misalignment) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 481.60 Td 0 g (Parameter: steering_bias. Guide range: -0.5 to 0.5. Typical settings are 0.05, 0.15, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 467.40 Td 0 g (0.4.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 445.20 Td 0 g (Relevant scripts to inspect: manage.py parses steering_bias, passes it into DriveMode as) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 431.00 Td 0 g (steering_offset, and defines the DriveMode class; DriveMode.run applies steering_gain, then) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 416.80 Td 0 g (steering_offset, then clamps the final steering value.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 394.60 Td 0 g (Steering misalignment is implemented as an additive offset on the final steering command.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 380.40 Td 0 g (manage.py passes steering_bias into DriveMode as steering_offset. DriveMode first chooses) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 366.20 Td 0 g (user or pilot steering depending on mode, multiplies it by steering_gain, then adds) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 352.00 Td 0 g (steering_offset and clamps the result to the valid normalized steering range from -1 to 1.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 329.80 Td 0 g (A positive or negative bias means a nominally straight command no longer drives straight.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 315.60 Td 0 g (The controller has to constantly compensate for the offset. If the bias is large, the) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 301.40 Td 0 g (command may also clip at the steering limits, reducing available correction in the opposite) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 287.20 Td 0 g (direction.) Tj ET
+0 g
+BT /F2 12.40 Tf 54.00 261.00 Td 0 g (Power Steering Fail) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 239.00 Td 0 g (Parameter: steering_gain. Guide range: 0 to 1. Typical settings are 0.8, 0.4, and 0.1.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 216.80 Td 0 g (Relevant scripts to inspect: manage.py parses steering_gain, passes it into DriveMode, and) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 202.60 Td 0 g (defines DriveMode.run; DriveMode.run multiplies the selected steering command by) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 188.40 Td 0 g (steering_gain before steering_bias is added.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 166.20 Td 0 g (Power steering failure reduces steering authority by multiplying the chosen steering command) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 152.00 Td 0 g (before bias is added. In DriveMode, the raw steering value is multiplied by steering_gain,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 137.80 Td 0 g (then steering_bias is added, and the final value is clamped.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 115.60 Td 0 g (With steering_gain below 1.0, the same neural pilot output produces a smaller wheel angle.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 101.40 Td 0 g (The car may not turn sharply enough for curves and may recover too slowly from lateral) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 87.20 Td 0 g (error. At very low gain, the controller can ask for full steering but still receive only a) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 73.00 Td 0 g (small fraction of the normal steering response.) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 5) Tj ET
+0 g
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 1875 >>
+stream
+BT /F2 9.00 Tf 54.00 734.00 Td 0.4 g (Donkey Car Anomalies Explained) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 703.00 Td 0 g (GAN repair path) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 677.00 Td 0 g (The guide also mentions cyclegan and pix2pix meta keys. These are not anomalies by) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 662.80 Td 0 g (themselves. They are optional image-repair models that can be loaded alongside an image-) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 648.60 Td 0 g (space sensing anomaly.) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 626.40 Td 0 g (The intended pipeline is: simulator image, then image-space anomaly such as mud, blur, or) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 612.20 Td 0 g (brightness, then GAN repair, then the Keras controller. That ordering means the GAN sees the) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 598.00 Td 0 g (corrupted image and tries to translate it back toward a cleaner domain before the driving) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 583.80 Td 0 g (model makes a decision. This path is meaningful mainly for sensing anomalies, because) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 569.60 Td 0 g (dynamics and control anomalies do not corrupt the camera image.) Tj ET
+0 g
+BT /F2 15.00 Tf 54.00 540.40 Td 0 g (Trial outputs) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 514.40 Td 0 g (trials.py can repeat the same anomaly configuration multiple times. Each run writes a data) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 500.20 Td 0 g (folder labeled with environment, noise, and name. The key outputs are cte_values.csv,) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 486.00 Td 0 g (containing cross-track error per frame, and cte_plot.png, a plot of cross-track error over) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 471.80 Td 0 g (time. The simulator run stops after roughly sixty seconds or after sustained collision) Tj ET
+0 g
+BT /F1 10.50 Tf 54.00 457.60 Td 0 g (handling stops the loop.) Tj ET
+0 g
+BT /F1 8 Tf 520 30 Td 0.45 g (Page 6) Tj ET
+0 g
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Type /Catalog /Pages 4 0 R >>
+endobj
+xref
+0 18
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000000160 00000 n 
+0000000228 00000 n 
+0000000319 00000 n 
+0000004856 00000 n 
+0000005002 00000 n 
+0000009643 00000 n 
+0000009789 00000 n 
+0000014481 00000 n 
+0000014628 00000 n 
+0000018947 00000 n 
+0000019095 00000 n 
+0000023902 00000 n 
+0000024050 00000 n 
+0000025978 00000 n 
+0000026126 00000 n 
+trailer
+<< /Size 18 /Root 17 0 R >>
+startxref
+26176
+%%EOF
