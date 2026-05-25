@@ -66,7 +66,8 @@ if __name__ == '__main__':
         meta_list = args['--meta'] or []
         anomaly_type = meta_list[0].split(':')[0] if meta_list else 'normal'
         intensity_param = float(meta_list[0].split(':')[1]) if meta_list and ':' in meta_list[0] else 0.0
-        anomaly_flag = len(meta_list)
+        #anomaly_flag = len(meta_list)
+        anomaly_flag = anomaly_type #Will probably have to change this for multiple anomalies. Previous implementation of it being len(meta_list) doesn't make sense to me
         cfg.GYM_CONF['random_start'] = bool(args['--random_start'])
 
         # Need to make new directory for this trial and save all the info to this one.
@@ -91,8 +92,8 @@ if __name__ == '__main__':
             log_dir = os.path.join(runs_dir, f'log_{i}.csv')
             drive(cfg, model_path=args['--model'], use_joystick=args['--js'],
                 model_type=model_type, camera_type=camera_type,
-                meta=[], folder_name=session_dir + '/', log_dir=log_dir,
+                meta=meta_list, folder_name=session_dir + '/', log_dir=log_dir,
                 run_id=i, anomaly_type=anomaly_type,
-                intensity_param=intensity_param, anomaly_flag=anomaly_flag, runs_dir=runs_dir)
+                intensity_param=intensity_param, anomaly_flag=anomaly_flag, runs_dir=runs_dir) 
     
     
