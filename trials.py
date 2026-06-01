@@ -72,7 +72,10 @@ if __name__ == '__main__':
 
         # Need to make new directory for this trial and save all the info to this one.
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
-        session_dir = os.path.join('trials', anomaly_type, timestamp)
+        value_tag = str(intensity_param).replace('-', 'neg').replace('.', 'p')
+        job_id = os.environ.get('SLURM_JOB_ID', str(os.getpid()))
+        session_name = f'{timestamp}_{value_tag}_{job_id}'
+        session_dir = os.path.join('trials', anomaly_type, session_name)
         runs_dir = os.path.join(session_dir, 'runs')
         os.makedirs(runs_dir, exist_ok=True)
 
