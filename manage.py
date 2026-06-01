@@ -886,7 +886,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
         if env_name == "":
             env_name = cfg.DONKEY_GYM_ENV_NAME
         
-        gym = DonkeyGymEnv(cfg.DONKEY_SIM_PATH, host=cfg.SIM_HOST, env_name=env_name, noise = noise, conf=cfg.GYM_CONF,
+        gym = DonkeyGymEnv(cfg.DONKEY_SIM_PATH, host=cfg.SIM_HOST, port=getattr(cfg, "SIM_PORT", 9091), env_name=env_name, noise = noise, conf=cfg.GYM_CONF,
                            record_location=cfg.SIM_RECORD_LOCATION, record_gyroaccel=cfg.SIM_RECORD_GYROACCEL,
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE
