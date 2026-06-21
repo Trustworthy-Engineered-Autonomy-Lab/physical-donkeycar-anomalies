@@ -380,9 +380,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         img_folder = runs_dir + f"/{run_id}/imgs/" if runs_dir else os.path.join(folder_name or ".", "imgs")
 
         if model_type == "linear_with_gan":
-            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, noise, env_name, name, folder_name=img_folder)
+            kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, "", env_name, name, folder_name=img_folder)
         else:
-            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, noise, env_name, name, img_folder)
+            kl = dk.utils.get_model_by_type(model_type, cfg, None, None, "", env_name, name, img_folder)
 
         #
         # get callback function to reload the model
