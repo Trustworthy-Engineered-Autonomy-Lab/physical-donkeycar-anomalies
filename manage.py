@@ -31,6 +31,8 @@ except:
 
 
 import donkeycar as dk
+from donkeycar.config import load_config
+from donkeycar.vehicle import Vehicle
 from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
 from donkeycar.parts.tub_v2 import TubWriter
 from donkeycar.parts.datastore import TubHandler
@@ -82,6 +84,8 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     friction_scale = 1.0
     drag_force = 0.0
     blur_kernel = 7
+    one_wheel_friction_scale = 1.0
+    one_wheel_friction_index = -1
 
     # Iterate over the meta list and assign values based on keys
     for item in meta:
@@ -120,6 +124,10 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             drag_force = float(value)
         elif key == "blur_kernel":
             blur_kernel = int(value)
+        elif key == "one_wheel_friction_scale":
+            one_wheel_friction_scale = float(value)
+        elif key == "one_wheel_friction_index":
+            one_wheel_friction_index = int(value)
 
 
     if gan_path and gan_type:
@@ -138,8 +146,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         else:
             model_type = cfg.DEFAULT_MODEL_TYPE
 
-    # Initialize car
-    V = dk.vehicle.Vehicle()
+    V = Vehicle()
 
     # Initialize logging before anything else to allow console logging
     if cfg.HAVE_CONSOLE_LOGGING:
@@ -156,9 +163,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     # if we are using the simulator, set it up
     #
     if env_name:
-        gym = add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, blur_kernel = blur_kernel, drag_force=drag_force)
+        gym = add_simulator(V, cfg, env_name, noise, name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, blur_kernel = blur_kernel, drag_force=drag_force, one_wheel_friction_scale=one_wheel_friction_scale, one_wheel_friction_index=one_wheel_friction_index)
     else:
-        gym = add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, blur_kernel = blur_kernel, drag_force=drag_force)
+        gym = add_simulator(V, cfg, noise=noise, name=name, folder_name=folder_name, num_drop = num_drop, brightness_coeff=brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, blur_kernel = blur_kernel, drag_force=drag_force, one_wheel_friction_scale=one_wheel_friction_scale, one_wheel_friction_index=one_wheel_friction_index)
 
 
     #
@@ -877,7 +884,7 @@ def add_user_controller(V, cfg, use_joystick, input_image='ui/image_array'):
     return ctr
 
 
-def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0, brightness_coeff = 1.0, cmd_latency=0, mass_scale = 1.0, cam_pitch = 0.0, occlusion_fraction = .4, friction_scale = 1.0, drag_force = 0.0, blur_kernel = 7):
+def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", num_drop = 0, brightness_coeff = 1.0, cmd_latency=0, mass_scale = 1.0, cam_pitch = 0.0, occlusion_fraction = .4, friction_scale = 1.0, drag_force = 0.0, blur_kernel = 7, one_wheel_friction_scale = 1.0, one_wheel_friction_index = -1):
     # Donkey gym part will output position information if it is configured
     # TODO: the simulation outputs conflict with imu, odometry, kinematics pose estimation and T265 outputs; make them work together.
     if cfg.DONKEY_GYM:
@@ -891,7 +898,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
                            record_velocity=cfg.SIM_RECORD_VELOCITY, record_lidar=cfg.SIM_RECORD_LIDAR,
                         #    record_distance=cfg.SIM_RECORD_DISTANCE
                            record_orientation=cfg.SIM_RECORD_ORIENTATION,
-                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name, brightness_coeff =brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, drag_force = drag_force, blur_kernel = blur_kernel)
+                           delay=cfg.SIM_ARTIFICIAL_LATENCY, num_drop=num_drop, name=name, folder_name=folder_name, brightness_coeff =brightness_coeff, cmd_latency = cmd_latency, mass_scale = mass_scale, cam_pitch = cam_pitch, occlusion_fraction = occlusion_fraction, friction_scale = friction_scale, drag_force = drag_force, blur_kernel = blur_kernel,  one_wheel_friction_scale = one_wheel_friction_scale, one_wheel_friction_index = one_wheel_friction_index)
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
@@ -1265,7 +1272,7 @@ def add_drivetrain(V, cfg):
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    cfg = dk.load_config(myconfig=args['--myconfig'])
+    cfg = load_config(myconfig=args['--myconfig'])
 
     if args['drive']:
         print(args['--meta'])
