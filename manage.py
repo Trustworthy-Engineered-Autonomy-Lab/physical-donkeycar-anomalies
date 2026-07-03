@@ -86,6 +86,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
     blur_kernel = 7
     one_wheel_friction_scale = 1.0
     one_wheel_friction_index = -1
+    anomaly_intensities = {}
 
     # Iterate over the meta list and assign values based on keys
     for item in meta:
@@ -104,30 +105,43 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             name = value
         elif key == "steering_gain":
             steering_gain = float(value)
+            anomaly_intensities[key] = steering_gain
         elif key == "steering_bias":
             steering_bias = float(value)
+            anomaly_intensities[key] = steering_bias
         elif key == "frame_drop":
             num_drop = int(value)
+            anomaly_intensities[key] = num_drop
         elif key == "brightness_coeff":
             brightness_coeff = float(value)
+            anomaly_intensities[key] = brightness_coeff
         elif key == "cmd_latency":
             cmd_latency = int(value)
+            anomaly_intensities[key] = cmd_latency
         elif key == "mass_scale":
             mass_scale = float(value)
+            anomaly_intensities[key] = mass_scale
         elif key == "cam_pitch":
             cam_pitch = float(value)
+            anomaly_intensities[key] = cam_pitch
         elif key == "occlusion_fraction":
             occlusion_fraction = float(value)
+            anomaly_intensities[key] = occlusion_fraction
         elif key == "friction_scale":
             friction_scale = float(value)
+            anomaly_intensities[key] = friction_scale
         elif key == "drag_force":
             drag_force = float(value)
+            anomaly_intensities[key] = drag_force
         elif key == "blur_kernel":
             blur_kernel = int(value)
+            anomaly_intensities[key] = blur_kernel
         elif key == "one_wheel_friction_scale":
             one_wheel_friction_scale = float(value)
+            anomaly_intensities[key] = one_wheel_friction_scale
         elif key == "one_wheel_friction_index":
             one_wheel_friction_index = int(value)
+            anomaly_intensities[key] = one_wheel_friction_index
 
 
     if gan_path and gan_type:
@@ -544,7 +558,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         summary_path = os.path.join(os.path.dirname(log_dir), 'summary.csv')
         run_logger = RunLogger(log_dir=runs_dir + f'/{run_id}', summary_path=summary_path,
                                run_id=run_id, anomaly_type=anomaly_type,
-                               intensity_param=intensity_param, anomaly_flag=anomaly_flag, start_pos = int(cfg.GYM_CONF['start_pos']))
+                               intensity_param=intensity_param, anomaly_flag=anomaly_flag,
+                               start_pos = int(cfg.GYM_CONF['start_pos']),
+                               anomaly_intensities=anomaly_intensities)
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
                     'pilot/throttle', 'throttle',
