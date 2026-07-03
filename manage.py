@@ -564,6 +564,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
                     'pilot/throttle', 'throttle',
+                    'sim/time',
                     'pos/pos_x', 'pos/pos_z',
                     'gyro/gyro_y', 'pos/speed', 'pos/cte',
                     'accel/accel_x', 'accel/accel_z', 'yaw', 'pitch', 'roll',
@@ -918,7 +919,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
-        outputs = ['cam/image_array']
+        outputs = ['cam/image_array', 'sim/time']
 
         if cfg.SIM_RECORD_LOCATION:
             outputs += ['pos/pos_x', 'pos/pos_y', 'pos/pos_z', 'pos/speed', 'pos/cte']
