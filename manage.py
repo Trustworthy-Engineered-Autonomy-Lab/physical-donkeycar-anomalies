@@ -402,7 +402,10 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
 
         if model_type == "linear_with_gan":
             kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, "", env_name, name, folder_name=img_folder)
+            shadow_kl = dk.utils.get_model_by_type(model_type, cfg, gan_path, gan_type, "", env_name, name, folder_name=img_folder)
+
         else:
+            shadow_kl = dk.utils.get_model_by_type(model_type, cfg, None, None, "", env_name, name, img_folder)
             kl = dk.utils.get_model_by_type(model_type, cfg, None, None, "", env_name, name, img_folder)
 
         #
@@ -414,6 +417,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             model_path or '.savedmodel' in model_path or '.pth' in model_path or '.keras' in model_path:
             # load the whole model with weigths, etc
             load_model(kl, model_path)
+            load_model(shadow_kl, model_path)
 
             def reload_model(filename):
                 load_model(kl, filename)
@@ -509,6 +513,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             inputs = ['cam/image_array_trans'] + inputs[1:]
         
         V.add(kl, inputs=inputs, outputs=outputs, run_condition='run_pilot')
+        V.add(shadow_kl, inputs=['cam/image_array_clean'], outputs=['clean/pilot_angle', 'clean/pilot_throttle'], run_condition='run_pilot')
 
     #
     # stop at a stop sign
@@ -563,7 +568,9 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
                                anomaly_intensities=anomaly_intensities)
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
+                    'clean/pilot_angle', 'clean/pilot_throttle',
                     'pilot/throttle', 'throttle',
+                    'sim/steering_delayed', 'sim/throttle_delayed',
                     'sim/time',
                     'pos/pos_x', 'pos/pos_z',
                     'gyro/gyro_y', 'pos/speed', 'pos/cte',
@@ -919,7 +926,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
-        outputs = ['cam/image_array', 'sim/time']
+        outputs = ['cam/image_array', 'cam/image_array_clean', 'sim/time', 'sim/steering_delayed', 'sim/throttle_delayed']
 
         if cfg.SIM_RECORD_LOCATION:
             outputs += ['pos/pos_x', 'pos/pos_y', 'pos/pos_z', 'pos/speed', 'pos/cte']
