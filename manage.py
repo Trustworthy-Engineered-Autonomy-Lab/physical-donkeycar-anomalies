@@ -513,7 +513,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             inputs = ['cam/image_array_trans'] + inputs[1:]
         
         V.add(kl, inputs=inputs, outputs=outputs, run_condition='run_pilot')
-        V.add(shadow_kl, inputs=['cam/image_array_clean'], outputs=['clean/pilot_angle', 'clean/pilot_throttle'], run_condition='run_pilot')
+        V.add(shadow_kl, inputs=['cam/image_array_control'], outputs=['control/pilot_angle', 'control/pilot_throttle'], run_condition='run_pilot')
 
     #
     # stop at a stop sign
@@ -568,7 +568,7 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
                                anomaly_intensities=anomaly_intensities)
         V.add(run_logger,
             inputs=['pilot/angle', 'steering',
-                    'clean/pilot_angle', 'clean/pilot_throttle',
+                    'control/pilot_angle', 'control/pilot_throttle',
                     'pilot/throttle', 'throttle',
                     'sim/steering_delayed', 'sim/throttle_delayed',
                     'sim/time',
@@ -926,7 +926,7 @@ def add_simulator(V, cfg, env_name = "", noise = "", name = "",folder_name="", n
         gym.V = V
         threaded = True
         inputs = ['steering', 'throttle']
-        outputs = ['cam/image_array', 'cam/image_array_clean', 'sim/time', 'sim/steering_delayed', 'sim/throttle_delayed']
+        outputs = ['cam/image_array', 'cam/image_array_control', 'sim/time', 'sim/steering_delayed', 'sim/throttle_delayed']
 
         if cfg.SIM_RECORD_LOCATION:
             outputs += ['pos/pos_x', 'pos/pos_y', 'pos/pos_z', 'pos/speed', 'pos/cte']
