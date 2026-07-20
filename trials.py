@@ -32,6 +32,7 @@ except:
 
 
 import donkeycar as dk
+from donkeycar.config import load_config
 from donkeycar.parts.transform import TriggeredCallback, DelayedTrigger
 from donkeycar.parts.tub_v2 import TubWriter
 from donkeycar.parts.datastore import TubHandler
@@ -56,7 +57,7 @@ logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    cfg = dk.load_config(myconfig=args['--myconfig'])
+    cfg = load_config(myconfig=args['--myconfig'])
 
     if args['run_trials']:
         model_type = args['--type']
@@ -65,7 +66,15 @@ if __name__ == '__main__':
         trial_name = args['--trial_name']
         meta_list = args['--meta'] or []
         anomaly_type = meta_list[0].split(':')[0] if meta_list else 'normal'
-        intensity_param = float(meta_list[0].split(':')[1]) if meta_list and ':' in meta_list[0] else 0.0
+        intensity_param = 0.0
+        for item in meta_list:
+            if ':' not in item:
+                continue
+            try:
+                intensity_param = float(item.split(':', 1)[1])
+                break
+            except ValueError:
+                continue
         #anomaly_flag = len(meta_list)
         anomaly_flag = anomaly_type #Will probably have to change this for multiple anomalies. Previous implementation of it being len(meta_list) doesn't make sense to me
         cfg.GYM_CONF['random_start'] = bool(args['--random_start'])
