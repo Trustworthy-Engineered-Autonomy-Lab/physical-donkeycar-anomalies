@@ -408,6 +408,11 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None,
             shadow_kl = dk.utils.get_model_by_type(model_type, cfg, None, None, "", env_name, name, img_folder)
             kl = dk.utils.get_model_by_type(model_type, cfg, None, None, "", env_name, name, img_folder)
 
+        if hasattr(kl, 'image_save_role'):
+            kl.image_save_role = 'noise'
+        if hasattr(shadow_kl, 'image_save_role'):
+            shadow_kl.image_save_role = 'normal'
+
         #
         # get callback function to reload the model
         # for the configured model format
